@@ -24,6 +24,6 @@ This implementation requires Pytorch. We have tested ERNet with Python 3.6 and 3
 * Start in the root folder: ```./```
 * Run the command:
   ```
-  python run.py --root C:/od/0phd/ERNet/trainingdata/partitioned_256 --imageSize 256 --out 0206_ERNet_rcan-rg5 --model rcan --nch_in 1 --nch_out 2 --ntrain 480 --ntest 20 --scale 1 --task segment --batchSize 2 --n_resgroups 5 --n_resblocks 10 --lr 0.0001 --scheduler 20,0.5 --nepoch 100 --dataset pickledataset
+  python run.py --root trainingdata/partitioned_256 --imageSize 256 --out 0206_ERNet_rcan-rg5 --model rcan --nch_in 1 --nch_out 2 --ntrain 480 --ntest 20 --scale 1 --task segment --batchSize 2 --n_resgroups 5 --n_resblocks 10 --lr 0.0001 --scheduler 20,0.5 --nepoch 100 --dataset pickledataset
   ```
 
