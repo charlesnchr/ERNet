@@ -21,7 +21,7 @@ This implementation requires Pytorch. We have tested ERNet with Python 3.6 and 3
 
 ## Training data :bar_chart:
 A simple training data set is provided in `./trainingdata/partitioned_256`. This dataset is preprocessed based on the labelled datafiles in `./trainingdata/labelled_data` using the command:
-```python
+```powershell
 python buildTrainingData.py
 ```
 
@@ -51,7 +51,7 @@ python buildTrainingData.py
   --dataset pickledataset
   ```
 * Run the `run.py` script with Python, e.g.:
-  ```python
+  ```powershell
   python run.py --root trainingdata/partitioned_256 --out trained_models/ERNet_rcan-rg5 --imageSize 256 --model rcan --nch_in 1 --nch_out 2 --ntrain 480 --ntest 20 --scale 1 --task segment --batchSize 2 --n_resgroups 5 --n_resblocks 10 --lr 0.0001 --scheduler 20,0.5 --nepoch 100 --dataset pickledataset
   ```
 
@@ -80,7 +80,7 @@ __Evaluating inputs with a model:__
   --n_resblocks 10 
   ```
 * Run the `evaluate.py` script with Python, e.g.:
-  ```python
+  ```powershell
   python evaluate.py --root testdata/input --weights pretrained_model --imageSize 1000 --out testdata/output --model rcan --nch_in 1 --nch_out 2 --n_resgroups 5 --n_resblocks 10
   ```
 
