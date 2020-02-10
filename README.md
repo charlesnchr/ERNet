@@ -15,15 +15,75 @@ The architectures of these models are among several residual learning networks (
 
 Choosing the first part of our segmentation model to have an architecture built for restoration ensures that it is capable of handling low signal-to-noise ratio as it can learn to perform denoising in these early layers of its network. A neural network model intended for image restoration will by default perform regression in order to output pixel value predictions in the same colour space as the input image. This is achieved during model training by minimising an appropriate loss function, typically the mean squared error. 
 
-## Installation
+## Installation :wrench:
 
 This implementation requires Pytorch. We have tested ERNet with Python 3.6 and 3.7 and Pytorch 1.2 and 1.4. 
 
-## Training 
-:coffee:
+## Training data :bar_chart:
+A simple training data set is provided in `./trainingdata/partitioned_256`. This dataset is preprocessed based on the labelled datafiles in `./trainingdata/labelled_data` using the command:
+```python
+python buildTrainingData.py
+```
+
+## Model training :watch:
+
+
 * Start in the root folder: ```./```
-* Run the command:
+* See available command line options with `python run.py -h` 
+* An example of options for training with RCAN could be:
+  ```powershell
+  --root trainingdata/partitioned_256 
+  --out trained_models/ERNet_rcan-rg5 
+  --imageSize 256 
+  --model rcan 
+  --nch_in 1 
+  --nch_out 2 
+  --ntrain 480 
+  --ntest 20 
+  --scale 1 
+  --task segment 
+  --batchSize 2 
+  --n_resgroups 5 
+  --n_resblocks 10 
+  --lr 0.0001 
+  --scheduler 20,0.5 
+  --nepoch 100 
+  --dataset pickledataset
   ```
-  python run.py --root trainingdata/partitioned_256 --imageSize 256 --out 0206_ERNet_rcan-rg5 --model rcan --nch_in 1 --nch_out 2 --ntrain 480 --ntest 20 --scale 1 --task segment --batchSize 2 --n_resgroups 5 --n_resblocks 10 --lr 0.0001 --scheduler 20,0.5 --nepoch 100 --dataset pickledataset
+* Run the `run.py` script with Python, e.g.:
+  ```python
+  python run.py --root trainingdata/partitioned_256 --out trained_models/ERNet_rcan-rg5 --imageSize 256 --model rcan --nch_in 1 --nch_out 2 --ntrain 480 --ntest 20 --scale 1 --task segment --batchSize 2 --n_resgroups 5 --n_resblocks 10 --lr 0.0001 --scheduler 20,0.5 --nepoch 100 --dataset pickledataset
   ```
 
+## Testing
+A couple of test images of the endoplasmic reticulum are provided in `testdata/input`, for instance:
+
+<img src="fig/testimg.png" width=200>
+
+To evaluate a model on these images in order to get the segmentation maps, use the script `evaluate.py`.
+
+ A simple pretrained model based on the example in the 'Model training' section is in the folder `pretrained_model`. 
+
+__Evaluating inputs with a model:__
+* Start in the root folder: ```./```
+* See available command line options with `python evaluate.py -h` 
+* An example of applying the pretrained model on the provided test images could be:
+  ```powershell
+  --root testdata/input
+  --weights pretrained_model
+  --imageSize 1000
+  --out testdata/output
+  --model rcan
+  --nch_in 1
+  --nch_out 2
+  --n_resgroups 5
+  --n_resblocks 10 
+  ```
+* Run the `evaluate.py` script with Python, e.g.:
+  ```python
+  python evaluate.py --root testdata/input --weights pretrained_model --imageSize 1000 --out testdata/output --model rcan --nch_in 1 --nch_out 2 --n_resgroups 5 --n_resblocks 10
+  ```
+
+The above example generates the output in `testdata/output`, such as:
+
+ <img src="fig/testoutput.png" width=200>
