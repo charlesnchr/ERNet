@@ -40,8 +40,6 @@ python buildTrainingData.py
   --nch_out 2 
   --ntrain 480 
   --ntest 20 
-  --scale 1 
-  --task segment 
   --batchSize 2 
   --n_resgroups 5 
   --n_resblocks 10 
@@ -52,7 +50,7 @@ python buildTrainingData.py
   ```
 * Run the `run.py` script with Python, e.g.:
   ```powershell
-  python run.py --root trainingdata/partitioned_256 --out trained_models/ERNet_rcan-rg5 --imageSize 256 --model rcan --nch_in 1 --nch_out 2 --ntrain 480 --ntest 20 --scale 1 --task segment --batchSize 2 --n_resgroups 5 --n_resblocks 10 --lr 0.0001 --scheduler 20,0.5 --nepoch 100 --dataset pickledataset
+  python run.py --root trainingdata/partitioned_256 --out trained_models/ERNet_rcan-rg5 --imageSize 256 --model rcan --nch_in 1 --nch_out 2 --ntrain 480 --ntest 20 --batchSize 2 --n_resgroups 5 --n_resblocks 10 --lr 0.0001 --scheduler 20,0.5 --nepoch 100 --dataset pickledataset
   ```
 
 ## Testing

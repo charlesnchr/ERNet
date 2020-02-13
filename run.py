@@ -1,9 +1,9 @@
 import math
 import os
-
-import torch
 import time 
 
+import torch
+import torch.nn as nn
 import torch.optim as optim
 import torchvision
 from torch.autograd import Variable
@@ -37,10 +37,7 @@ def remove_dataparallel_wrapper(state_dict):
 def train(dataloader, validloader, net, nepoch=10):
     
     start_epoch = 0
-    if opt.task == 'segment':
-        loss_function = nn.CrossEntropyLoss()
-    else:
-        loss_function = nn.MSELoss()
+    loss_function = nn.CrossEntropyLoss()
     optimizer = optim.Adam(net.parameters(), lr=opt.lr)
     loss_function.cuda()
 
@@ -53,20 +50,6 @@ def train(dataloader, validloader, net, nepoch=10):
         print('loading checkpoint',opt.weights)
         if opt.undomulti:
             checkpoint['state_dict'] = remove_dataparallel_wrapper(checkpoint['state_dict'])
-        if opt.modifyPretrainedModel:
-            pretrained_dict = checkpoint['state_dict']
-            model_dict = net.state_dict()
-            # 1. filter out unnecessary keys
-            for k,v in list(pretrained_dict.items()):
-                print(k)
-            pretrained_dict = {k: v for k, v in list(pretrained_dict.items())[:-2]}
-            # 2. overwrite entries in the existing state dict
-            model_dict.update(pretrained_dict)
-            # 3. load the new state dict
-            net.load_state_dict(model_dict)
-
-            # optimizer.load_state_dict(checkpoint['optimizer'])
-            start_epoch = checkpoint['epoch']
         else:
             net.load_state_dict(checkpoint['state_dict'])
             optimizer.load_state_dict(checkpoint['optimizer'])
@@ -102,11 +85,8 @@ def train(dataloader, validloader, net, nepoch=10):
                 loss = loss_function(noise, gt_noise)
             else:
                 sr = net(lr.cuda())
-                if opt.task == 'segment':
-                    hr_classes = torch.round(2*hr).long()
-                    loss = loss_function(sr.squeeze(), hr_classes.squeeze().cuda())
-                else:
-                    loss = loss_function(sr, hr.cuda())
+                hr_classes = torch.round(2*hr).long()
+                loss = loss_function(sr.squeeze(), hr_classes.squeeze().cuda())
 
             loss.backward()
             optimizer.step()

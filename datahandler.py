@@ -69,47 +69,33 @@ class GenericPickleDataset(Dataset):
 
         self.trans = transforms.Compose([transforms.ToPILImage(),transforms.Resize(opt.imageSize),transforms.ToTensor()])
         
-        self.scale = opt.scale
         self.nch = opt.nch_in
         self.len = len(self.images)
         self.category = category
 
     def __getitem__(self, index):
 
-        if self.scale > 1:
-            img = pickle.load(open(self.images[index],'rb'))
-            hr = toTensor(img)
+        lq, hq = pickle.load(open(self.images[index], 'rb'))
+        lq, hq = toTensor(lq), toTensor(hq)
 
-            # rotate and flip?
-            # if random.random() > 0.5:
-            #     hr = hr.permute(0, 2, 1)
-            # if random.random() > 0.5:
-            #     hr = torch.flip(hr, [1])
+        # multi-image input?
+        if lq.shape[0] > self.nch:
+            lq = lq[lq.shape[0] // 2].unsqueeze(0)
+            hq = hq[hq.shape[0] // 2].unsqueeze(0)
+        
+        # rotate and flip?
+        if self.category == 'train':
+            if random.random() > 0.5:
+                lq = lq.permute(0, 2, 1)
+                hq = hq.permute(0, 2, 1)
+            if random.random() > 0.5:
+                lq = torch.flip(lq, [1])
+                hq = torch.flip(hq, [1])
+            if random.random() > 0.5:
+                lq = torch.flip(lq, [2])
+                hq = torch.flip(hq, [2])
 
-            lr = self.trans(hr)
-            return lr, hr
-        else:
-            lq, hq = pickle.load(open(self.images[index], 'rb'))
-            lq, hq = toTensor(lq), toTensor(hq)
-
-            # multi-image input?
-            if lq.shape[0] > self.nch:
-                lq = lq[lq.shape[0] // 2].unsqueeze(0)
-                hq = hq[hq.shape[0] // 2].unsqueeze(0)
-            
-            # rotate and flip?
-            if self.category == 'train':
-                if random.random() > 0.5:
-                    lq = lq.permute(0, 2, 1)
-                    hq = hq.permute(0, 2, 1)
-                if random.random() > 0.5:
-                    lq = torch.flip(lq, [1])
-                    hq = torch.flip(hq, [1])
-                if random.random() > 0.5:
-                    lq = torch.flip(lq, [2])
-                    hq = torch.flip(hq, [2])
-
-            
+        
         return lq, hq, hq # hq, lq, lq
 
     def __len__(self):
