@@ -1,0 +1,2 @@
+Namespace(batchSize=16, batchSize_test=1, cpu=False, dataset='imagedataset', fid=<_io.TextIOWrapper name='testdata/output/log.txt' mode='w' encoding='cp1252'>, imageSize=1000, log=False, lr=0.0001, model='rcan', multigpu=False, n_feats=64, n_resblocks=10, n_resgroups=5, narch=0, nch_in=1, nch_out=2, nepoch=10, ntest=10, ntrain=0, out='testdata/output', plotinterval=1, reduction=16, root='testdata/input', saveinterval=10, scheduler='', test=False, testinterval=1, undomulti=False, weights='pretrained_model/final.pth', workers=6) 
+

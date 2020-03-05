@@ -1,9 +1,10 @@
 import math
 import os
-import time 
 
 import torch
 import torch.nn as nn
+import time 
+
 import torch.optim as optim
 import torchvision
 from torch.autograd import Variable
@@ -39,11 +40,10 @@ def train(dataloader, validloader, net, nepoch=10):
     start_epoch = 0
     loss_function = nn.CrossEntropyLoss()
     optimizer = optim.Adam(net.parameters(), lr=opt.lr)
+    loss_function.cuda()
 
-    useGPU = torch.cuda.is_available() and not opt.cpu
-    
-    if useGPU:
-        loss_function.cuda()
+    loss_function_custom = nn.MSELoss()
+    loss_function_custom.cuda()
 
 
     if len(opt.weights) > 0: # load previous weights?
@@ -51,6 +51,20 @@ def train(dataloader, validloader, net, nepoch=10):
         print('loading checkpoint',opt.weights)
         if opt.undomulti:
             checkpoint['state_dict'] = remove_dataparallel_wrapper(checkpoint['state_dict'])
+        if opt.modifyPretrainedModel:
+            pretrained_dict = checkpoint['state_dict']
+            model_dict = net.state_dict()
+            # 1. filter out unnecessary keys
+            for k,v in list(pretrained_dict.items()):
+                print(k)
+            pretrained_dict = {k: v for k, v in list(pretrained_dict.items())[:-2]}
+            # 2. overwrite entries in the existing state dict
+            model_dict.update(pretrained_dict)
+            # 3. load the new state dict
+            net.load_state_dict(model_dict)
+
+            # optimizer.load_state_dict(checkpoint['optimizer'])
+            start_epoch = checkpoint['epoch']
         else:
             net.load_state_dict(checkpoint['state_dict'])
             optimizer.load_state_dict(checkpoint['optimizer'])
@@ -69,17 +83,28 @@ def train(dataloader, validloader, net, nepoch=10):
 
         for i, bat in enumerate(dataloader):
             lr, hr = bat[0], bat[1]
-            hr = hr[:,0] # no need for colour channel, just holds holds integers for classes
+            
             optimizer.zero_grad()
-
-            if useGPU:
-                sr = net(lr.cuda())
-                hr_classes = torch.round((opt.nch_out-1)*hr).long().cuda()
+            if opt.model == 'ffdnet':
+                stdvec = torch.zeros(lr.shape[0])
+                for j in range(lr.shape[0]):
+                    noise = lr[j] - hr[j]
+                    stdvec[j] = torch.std(noise)
+                noise = net(lr.cuda(), stdvec.cuda())
+                sr = torch.clamp( lr.cuda() - noise,0,1 )
+                gt_noise = lr.cuda() - hr.cuda()
+                loss = loss_function(noise, gt_noise)
+            elif opt.task == 'residualdenoising':
+                noise = net(lr.cuda())
+                gt_noise = lr.cuda() - hr.cuda()
+                loss = loss_function(noise, gt_noise)
             else:
-                sr = net(lr)
-                hr_classes = torch.round((opt.nch_out-1)*hr).long()
-
-            loss = loss_function(sr, hr_classes)
+                sr = net(lr.cuda())
+                if opt.task == 'segment':
+                    hr_classes = torch.round(2*hr).long()
+                    loss = loss_function(sr.squeeze(), hr_classes.squeeze().cuda())
+                else:
+                    loss = loss_function(sr, hr.cuda())
 
             loss.backward()
             optimizer.step()
@@ -145,25 +170,22 @@ if __name__ == '__main__':
         
     dataloader, validloader = GetDataloaders(opt)        
     net = GetModel(opt)
+    net.cpu()
+    loss_function = nn.MSELoss()
+    optimizer = optim.Adam(net.parameters(), lr=opt.lr)
     
-    if opt.log:
-        opt.train_stats = open(opt.out.replace('\\','/') + '/train_stats.csv','w')
-        opt.test_stats = open(opt.out.replace('\\','/') + '/test_stats.csv','w')
-        print('iter,nsample,time,memory,meanloss',file=opt.train_stats)
-        print('iter,time,memory,psnr,ssim',file=opt.test_stats)
-
-    import time
-    t0 = time.perf_counter()
-    if not opt.test:
-        train(dataloader, validloader, net, nepoch=opt.nepoch)
-    else:
-        if len(opt.weights) > 0: # load previous weights?
-            checkpoint = torch.load(opt.weights)
-            print('loading checkpoint',opt.weights)
-            if opt.undomulti:
-                checkpoint['state_dict'] = remove_dataparallel_wrapper(checkpoint['state_dict'])
+    if len(opt.weights) > 0: # load previous weights?
+        checkpoint = torch.load(opt.weights)
+        print('loading checkpoint',opt.weights)
+        if opt.undomulti:
+            checkpoint['state_dict'] = remove_dataparallel_wrapper(checkpoint['state_dict'])
+        else:
             net.load_state_dict(checkpoint['state_dict'])
-            print('time: ',time.perf_counter()-t0)
-        testAndMakeCombinedPlots(net,validloader,opt)
-    print('time: ',time.perf_counter()-t0)
+            optimizer.load_state_dict(checkpoint['optimizer'])
+            start_epoch = checkpoint['epoch']
 
+    checkpoint = {'epoch': opt.nepoch,
+            'state_dict': net.state_dict(),
+            'optimizer' : optimizer.state_dict() }
+    net.cpu()
+    torch.save(checkpoint, opt.out + '/final-cpu.pth')
