@@ -93,8 +93,9 @@ def testAndMakeCombinedPlots(net,loader,opt,idx=None):
     print(summarystr,file=opt.fid)
     opt.fid.flush()
     if opt.log and not opt.test:
+        opt.writer.add_scalar('data/psnr', mean_sr_psnr / count,idx)
+        opt.writer.add_scalar('data/ssim', mean_sr_ssim / count,idx)
         t1 = time.perf_counter() - opt.t0
         mem = torch.cuda.memory_allocated()
         print(idx,t1,mem,mean_sr_psnr / count, mean_sr_ssim / count, file=opt.test_stats)
         opt.test_stats.flush()
-

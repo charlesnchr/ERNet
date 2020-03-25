@@ -7,6 +7,7 @@ import torch.nn as nn
 import torch.optim as optim
 import torchvision
 from torch.autograd import Variable
+from torch.utils.tensorboard import SummaryWriter
 
 from models import GetModel
 from datahandler import GetDataloaders
@@ -111,6 +112,8 @@ def train(dataloader, validloader, net, nepoch=10):
         print('\nEpoch %d done, %0.6f' % (epoch,(mean_loss / len(dataloader))))
         print('\nEpoch %d done, %0.6f' % (epoch,(mean_loss / len(dataloader))),file=opt.fid)
         opt.fid.flush()
+        if opt.log:
+            opt.writer.add_scalar('data/mean_loss', mean_loss / len(dataloader), epoch)
 
 
         # ---------------- TEST -----------------
@@ -145,13 +148,14 @@ if __name__ == '__main__':
         
     dataloader, validloader = GetDataloaders(opt)        
     net = GetModel(opt)
-    
+
     if opt.log:
+        opt.writer = SummaryWriter(comment='_%s_%s' % (opt.out.replace('\\','/').split('/')[-1], opt.model))
         opt.train_stats = open(opt.out.replace('\\','/') + '/train_stats.csv','w')
         opt.test_stats = open(opt.out.replace('\\','/') + '/test_stats.csv','w')
         print('iter,nsample,time,memory,meanloss',file=opt.train_stats)
         print('iter,time,memory,psnr,ssim',file=opt.test_stats)
-
+    
     import time
     t0 = time.perf_counter()
     if not opt.test:
