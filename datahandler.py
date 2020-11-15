@@ -10,8 +10,6 @@ import pickle
 
 import numpy as np
 
-from skimage import io
-
 def PSNR(I0,I1):
     MSE = torch.mean( (I0-I1)**2 )
     PSNR = 20*torch.log10(1/torch.sqrt(MSE))

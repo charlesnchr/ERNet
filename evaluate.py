@@ -12,7 +12,6 @@ from torch.autograd import Variable
 from models import *
 from datahandler import *
 
-from skimage import io
 import matplotlib.pyplot as plt
 import glob
 
@@ -85,8 +84,6 @@ def EvaluateModel(opt):
     for i, imgfile in enumerate(imgs):
         img = np.array(Image.open(imgfile))/255
 
-        # img = io.imread(imgfile)
-        # img = (img - np.min(img)) / (np.max(img) - np.min(img)) 
 
         if len(img.shape) > 2:
             print('removing colour channel')
