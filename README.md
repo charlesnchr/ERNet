@@ -44,6 +44,12 @@ python segment.py testdata/input/*.png
 
 This segments the two wide-field test images with the tubule model. The weights come with the repository, which makes the clone about 130 MB. A GPU is used when one is available.
 
+On a machine without a GPU, install the CPU build of PyTorch first. It is a much smaller download than the default build.
+
+```bash
+pip install torch torchvision --index-url https://download.pytorch.org/whl/cpu
+```
+
 Everything lands in `segmented/`.
 
 | File | Contents |
@@ -51,7 +57,7 @@ Everything lands in `segmented/`.
 | `NAME_classes.png` | The class of every pixel as a grey value: 0 background, 127 sheet, 255 tubule |
 | `NAME_overlay.png` | The classes in colour over the input, tubules cyan and sheets yellow |
 | `NAME_graph.png` | The skeleton of the tubules over the input, with tips in green, three-way junctions in red and junctions of more than three tubules in violet |
-| `metrics.csv` | One row per frame with the ER area and the graph measurements |
+| `metrics.csv` | One row per frame with the ER area and the graph measurements. Rows from earlier runs are kept |
 
 The second model separates sheets from tubules in super-resolution images. The script downloads it (19 MB) on first use and checks its hash.
 
