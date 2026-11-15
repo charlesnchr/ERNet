@@ -42,7 +42,7 @@ pip install -r requirements.txt
 python segment.py testdata/input/*.png
 ```
 
-This segments the two wide-field test images with the tubule model. The weights come with the repository, which makes the clone about 130 MB. A GPU is used when one is available.
+This segments the two wide-field test images with the tubule model. The weights come with the repository, which makes the clone about 140 MB. A GPU is used when one is available.
 
 On a machine without a GPU, install the CPU build of PyTorch first. It is a much smaller download than the default build.
 
@@ -130,7 +130,7 @@ The Otsu threshold finds the cell body and little else. The local threshold find
 
 ## Train a model on your own images
 
-The tubule model has seen one microscope and one cell line. For data that looks different, label a few images and train your own. Five label maps were enough for the released model.
+The tubule model has seen five wide-field images that look like the test images. For data that looks different, label a few images and train your own. Five label maps were enough for the released model.
 
 The image is a greyscale file. Its label is an RGBA PNG of the same size, opaque where there is ER and transparent elsewhere. List your image and label pairs in `allimgs` at the bottom of `buildTrainingData.py`, then cut them into crops.
 
@@ -173,7 +173,7 @@ Both models are also on the [v1.0 release](https://github.com/charlesnchr/ERNet/
 ## Limits
 
 - This is the first version. [ERnet-v2](https://github.com/charlesnchr/ERnet-v2) has a transformer model with four classes, was tested on more microscopes and cell types, and was checked against ground truth. Use it for new work unless you need a plain CNN or a model trained on wide-field images like the test images.
-- The tubule model was trained on five images from one microscope. Expect to retrain it for other optics or cell types.
+- The tubule model was trained on five wide-field images that look like the test images. Expect to retrain it for other optics or cell types.
 - Neither model here has a published accuracy figure. The fragment counts above compare ERNet with thresholds on one frame, and they are not a benchmark against labelled ground truth.
 - The saturated region around the nucleus is left unlabelled. Wide-field imaging cannot resolve the ER there.
 - The channel attention pools over the whole tile, so the result depends slightly on how a frame is tiled. For the test images, one pass and the four overlapping tiles of `evaluate.py` disagree on fewer than 0.1% of the pixels.
