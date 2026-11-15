@@ -7,7 +7,7 @@ measure the tubular network.
 Inputs are greyscale images (PNG, JPG, TIFF) or multi-frame TIFF stacks. For
 every frame the script writes the class map, a colour overlay and the skeleton
 graph of the tubules drawn over the input. One row per frame goes to
-metrics.csv in the output folder.
+metrics.csv in the output folder, next to the rows of earlier runs.
 
 Two models are available. "tubules" is the model in pretrained_model/, which
 separates tubules from background in wide-field images. "sheets" is a later
@@ -304,6 +304,21 @@ def analyse(net, model, arr, device, tile=1536, stretch=None):
     return img, classes, (skel, graph, positions), metrics
 
 
+def write_metrics(path, rows):
+    """Write the rows to metrics.csv, keeping the rows of earlier runs for other frames."""
+    done = {(r["file"], str(r["frame"]), r["model"]) for r in rows}
+    kept = []
+    if os.path.isfile(path):
+        with open(path, newline="") as f:
+            reader = csv.DictReader(f)
+            if reader.fieldnames == COLUMNS:
+                kept = [r for r in reader if (r["file"], r["frame"], r["model"]) not in done]
+    with open(path, "w", newline="") as f:
+        writer = csv.DictWriter(f, fieldnames=COLUMNS)
+        writer.writeheader()
+        writer.writerows(kept + rows)
+
+
 def main():
     p = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     p.add_argument("images", nargs="+", help="greyscale images or TIFF stacks")
@@ -338,10 +353,7 @@ def main():
                 os.path.basename(path), i, metrics["nodes"], metrics["edges"],
                 metrics["tips"], metrics["three_way_junctions"]))
 
-    with open(os.path.join(args.out, "metrics.csv"), "w", newline="") as f:
-        writer = csv.DictWriter(f, fieldnames=COLUMNS)
-        writer.writeheader()
-        writer.writerows(rows)
+    write_metrics(os.path.join(args.out, "metrics.csv"), rows)
     print("Results are in", args.out)
 
 
