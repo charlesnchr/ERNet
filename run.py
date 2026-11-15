@@ -47,7 +47,7 @@ def train(dataloader, validloader, net, nepoch=10):
 
 
     if len(opt.weights) > 0: # load previous weights?
-        checkpoint = torch.load(opt.weights)
+        checkpoint = torch.load(opt.weights, map_location='cpu')
         print('loading checkpoint',opt.weights)
         if opt.undomulti:
             checkpoint['state_dict'] = remove_dataparallel_wrapper(checkpoint['state_dict'])
@@ -162,7 +162,7 @@ if __name__ == '__main__':
         train(dataloader, validloader, net, nepoch=opt.nepoch)
     else:
         if len(opt.weights) > 0: # load previous weights?
-            checkpoint = torch.load(opt.weights)
+            checkpoint = torch.load(opt.weights, map_location='cpu')
             print('loading checkpoint',opt.weights)
             if opt.undomulti:
                 checkpoint['state_dict'] = remove_dataparallel_wrapper(checkpoint['state_dict'])
