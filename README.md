@@ -166,7 +166,7 @@ Both models are also on the [v1.0 release](https://github.com/charlesnchr/ERNet/
 
 ## Limits
 
-- This is the first version. [ERnet-v2](https://github.com/charlesnchr/ERnet-v2) has a transformer model with four classes, was tested on more microscopes and cell types, and was checked against ground truth. Use it for new work unless you need a plain CNN or wide-field input like the test images.
+- This is the first version. [ERnet-v2](https://github.com/charlesnchr/ERnet-v2) has a transformer model with four classes, was tested on more microscopes and cell types, and was checked against ground truth. Use it for new work unless you need a plain CNN or a model trained on wide-field images like the test images.
 - The tubule model was trained on five images from one microscope. Expect to retrain it for other optics or cell types.
 - Neither model here has a published accuracy figure. The fragment counts above compare ERNet with thresholds on one frame, and they are not a benchmark against labelled ground truth.
 - The saturated region around the nucleus is left unlabelled. Wide-field imaging cannot resolve the ER there.
