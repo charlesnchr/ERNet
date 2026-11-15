@@ -1,14 +1,24 @@
-#### *Deprecation*
-*This project is superseded by [ERnet-v2](https://github.com/charlesnchr/ERnet-v2) associated with our more recent publication . Please see the new repository for a more advanced segmentation model that leverages a transformer architecture.*
+<h1 align="center">ERNet</h1>
 
-# ERNet — Segmentation of Endoplasmic Reticulum microscopy images
-_Meng Lu<sup>1</sup>, Francesca W. van Tartwijk<sup>1</sup>, Julie Qiaojin Lin<sup>1</sup>, Wilco Nijenhuis, Pierre Parutto, Marcus Fantham<sup>1</sup>,  __Charles N. Christensen<sup>1,*</sup>__, Edward  Avezov, Christine E. Holt, Alan Tunnacliffe, David Holcman, Lukas C. Kapitein, Gabriele Kaminski Schierle<sup>1</sup>, Clemens F. Kaminski<sup>1</sup>_</br></br>
-<sup>1</sup>University of Cambridge, Department of Chemical Engineering and Biotechnology</br>
-<sup> *</sup>Author of this repository - GitHub username: [charlesnchr](http://github.com/charlesnchr) - Email address: <code>charles.n.chr@gmail.com</code>
+<p align="center">
+  <b>A super-resolution network, rebuilt to trace the endoplasmic reticulum.</b><br>
+  It never downsamples, so tubules a few pixels wide come out in one piece.<br>
+  This is the original CNN. The transformer that followed it is <a href="https://github.com/charlesnchr/ERnet-v2">ERnet-v2</a>.
+</p>
 
-Pre-print: [https://www.biorxiv.org/content/10.1101/2020.01.15.907444v2](https://www.biorxiv.org/content/10.1101/2020.01.15.907444v2)
-<br>
-Paper: [https://www.science.org/doi/10.1126/sciadv.abc7209](https://www.science.org/doi/10.1126/sciadv.abc7209)
+<p align="center">
+  <a href="https://doi.org/10.1126/sciadv.abc7209"><img src="https://img.shields.io/badge/Science%20Advances-2020-b31b1b" alt="Paper in Science Advances"></a>
+  <a href="https://doi.org/10.1101/2020.01.15.907444"><img src="https://img.shields.io/badge/bioRxiv-2020.01.15.907444-b31b1b" alt="bioRxiv preprint"></a>
+  <a href="https://github.com/charlesnchr/ERnet-v2"><img src="https://img.shields.io/badge/successor-ERnet--v2-8250df" alt="Successor: ERnet-v2"></a>
+  <a href="LICENSE"><img src="https://img.shields.io/badge/license-GPL--3.0-blue" alt="GPL-3.0 license"></a>
+</p>
+
+<p align="center">
+  <img src="fig/hero.gif" alt="A wide-field image of a cell and a SIM image of the endoplasmic reticulum wiping to their segmentation and then to the skeleton graph of the tubules" width="900">
+</p>
+<p align="center">
+  <sub>A live COS-7 cell under a wide-field microscope and a SIM image of the ER, segmented and converted to a graph by the two models in this repository. Run <code>python fig/make_figures.py</code> to reproduce it.</sub>
+</p>
 
 ## Introduction
 
