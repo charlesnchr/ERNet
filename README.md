@@ -34,6 +34,35 @@ We built it for [Lu et al., Science Advances 2020](https://doi.org/10.1126/sciad
 - **No GPU needed.** A 1392x1040 frame takes about 75 s on four CPU cores.
 - **Published and built upon.** The Science Advances paper has been cited more than 100 times, and the method continued as ERnet in [Nature Methods](https://doi.org/10.1038/s41592-023-01815-0).
 
+## Try it
+
+```bash
+git clone https://github.com/charlesnchr/ERNet && cd ERNet
+pip install -r requirements.txt
+python segment.py testdata/input/*.png
+```
+
+This segments the two wide-field test images with the tubule model. The weights come with the repository, which makes the clone about 130 MB. A GPU is used when one is available.
+
+Everything lands in `segmented/`.
+
+| File | Contents |
+| --- | --- |
+| `NAME_classes.png` | The class of every pixel as a grey value: 0 background, 127 sheet, 255 tubule |
+| `NAME_overlay.png` | The classes in colour over the input, tubules cyan and sheets yellow |
+| `NAME_graph.png` | The skeleton of the tubules over the input, with tips in green, three-way junctions in red and junctions of more than three tubules in violet |
+| `metrics.csv` | One row per frame with the ER area and the graph measurements |
+
+The second model separates sheets from tubules in super-resolution images. The script downloads it (19 MB) on first use and checks its hash.
+
+```bash
+python segment.py --model sheets testdata/input_sim/*.png
+```
+
+To run either model on your own data, pass greyscale PNG, JPG or TIFF files. A multi-frame TIFF is treated as a time-lapse, and every frame gets its own outputs and its own row in `metrics.csv`.
+
+The two models expect different input. The tubule model was trained on 8-bit wide-field images and uses them as stored, so export yours with contrast like the test images, where the tubules are clearly visible and the cell body saturates. Frames with more than 8 bits are scaled to their 99.9th percentile. The sheet model stretches every frame between its 1st and 99th percentile. `--stretch LOW HIGH` sets the percentiles by hand for either model.
+
 ## Introduction
 
 ERNet is an artificial neural network based model for segmentation of endoplasmic reticulum microscopy images. The network architecture of choice is a deep residual network inspired by EDSR and RCAN ([Lim et al. 2017](https://arxiv.org/abs/1707.02921), [Zhang et al., 2018](https://arxiv.org/abs/1807.02758)). The modified architecture is shown in the image below with a block corresponding to EDSR.
@@ -43,10 +72,6 @@ ERNet is an artificial neural network based model for segmentation of endoplasmi
 The architectures of these models are among several residual learning networks (cite ResNet, SRGan, EDSR) designed for image restoration, specifically single image super-resolution (SR), i.e. image upsampling. The state-of-the-art SR architectures generally do not use downsampling between layers, but instead make training of deep networks feasible by following the structure of residual networks as first introduced with ResNets intended for image classification. The design idea of residual networks was taken one step further in EDSR with the proposal of a modified residual building block called ResBlock, which was found to be superior to the previously proposed and more directly adapted ResNet model called SRResNet
 
 Choosing the first part of our segmentation model to have an architecture built for restoration ensures that it is capable of handling low signal-to-noise ratio as it can learn to perform denoising in these early layers of its network. A neural network model intended for image restoration will by default perform regression in order to output pixel value predictions in the same colour space as the input image. This is achieved during model training by minimising an appropriate loss function, typically the mean squared error.
-
-## Installation :wrench:
-
-This implementation requires Pytorch. We have tested ERNet with Python 3.6 and 3.7 and Pytorch 1.2 and 1.4.
 
 ## Training data :bar_chart:
 A simple training data set is provided in `./trainingdata/partitioned_256`. This dataset is preprocessed based on the labelled datafiles in `./trainingdata/labelled_data` using the command:
@@ -81,36 +106,3 @@ python buildTrainingData.py
   ```powershell
   python run.py --root trainingdata/partitioned_256 --out trained_models/ERNet_rcan-rg5 --imageSize 256 --model rcan --nch_in 1 --nch_out 2 --ntrain 480 --ntest 20 --batchSize 2 --n_resgroups 5 --n_resblocks 10 --lr 0.0001 --scheduler 20,0.5 --nepoch 100 --dataset pickledataset
   ```
-
-## Testing
-A couple of test images of the endoplasmic reticulum are provided in `testdata/input`, for instance:
-
-<img src="fig/testimg.png" width=200>
-
-To evaluate a model on these images in order to get the segmentation maps, use the script `evaluate.py`.
-
- A simple pretrained model based on the example in the 'Model training' section is in the folder `pretrained_model`.
-
-__Evaluating inputs with a model:__
-* Start in the root folder: ```./```
-* See available command line options with `python evaluate.py -h`
-* An example of applying the pretrained model on the provided test images could be:
-  ```powershell
-  --root testdata/input
-  --weights pretrained_model
-  --imageSize 1000
-  --out testdata/output
-  --model rcan
-  --nch_in 1
-  --nch_out 2
-  --n_resgroups 5
-  --n_resblocks 10
-  ```
-* Run the `evaluate.py` script with Python, e.g.:
-  ```powershell
-  python evaluate.py --root testdata/input --weights pretrained_model --imageSize 1000 --out testdata/output --model rcan --nch_in 1 --nch_out 2 --n_resgroups 5 --n_resblocks 10
-  ```
-
-The above example generates the output in `testdata/output`, such as:
-
- <img src="fig/testoutput.png" width=200>
