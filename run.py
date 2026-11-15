@@ -51,10 +51,9 @@ def train(dataloader, validloader, net, nepoch=10):
         print('loading checkpoint',opt.weights)
         if opt.undomulti:
             checkpoint['state_dict'] = remove_dataparallel_wrapper(checkpoint['state_dict'])
-        else:
-            net.load_state_dict(checkpoint['state_dict'])
-            optimizer.load_state_dict(checkpoint['optimizer'])
-            start_epoch = checkpoint['epoch']
+        net.load_state_dict(checkpoint['state_dict'])
+        optimizer.load_state_dict(checkpoint['optimizer'])
+        start_epoch = checkpoint['epoch']
 
 
     if len(opt.scheduler) > 0:
