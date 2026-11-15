@@ -1,0 +1,47 @@
+cff-version: 1.2.0
+message: "If you use ERNet, please cite the paper it was developed for."
+title: "ERNet: segmentation of endoplasmic reticulum microscopy images with a residual CNN"
+type: software
+authors:
+  - family-names: Christensen
+    given-names: Charles N.
+repository-code: "https://github.com/charlesnchr/ERNet"
+license: GPL-3.0-only
+preferred-citation:
+  type: article
+  title: "The structure and global distribution of the endoplasmic reticulum network are actively regulated by lysosomes"
+  authors:
+    - family-names: Lu
+      given-names: Meng
+    - family-names: van Tartwijk
+      given-names: Francesca W.
+    - family-names: Lin
+      given-names: Julie Qiaojin
+    - family-names: Nijenhuis
+      given-names: Wilco
+    - family-names: Parutto
+      given-names: Pierre
+    - family-names: Fantham
+      given-names: Marcus
+    - family-names: Christensen
+      given-names: Charles N.
+    - family-names: Avezov
+      given-names: Edward
+    - family-names: Holt
+      given-names: Christine E.
+    - family-names: Tunnacliffe
+      given-names: Alan
+    - family-names: Holcman
+      given-names: David
+    - family-names: Kapitein
+      given-names: Lukas
+    - family-names: Kaminski Schierle
+      given-names: Gabriele S.
+    - family-names: Kaminski
+      given-names: Clemens F.
+  journal: "Science Advances"
+  volume: 6
+  issue: 51
+  start: eabc7209
+  year: 2020
+  doi: "10.1126/sciadv.abc7209"
