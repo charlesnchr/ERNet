@@ -63,6 +63,36 @@ To run either model on your own data, pass greyscale PNG, JPG or TIFF files. A m
 
 The two models expect different input. The tubule model was trained on 8-bit wide-field images and uses them as stored, so export yours with contrast like the test images, where the tubules are clearly visible and the cell body saturates. Frames with more than 8 bits are scaled to their 99.9th percentile. The sheet model stretches every frame between its 1st and 99th percentile. `--stretch LOW HIGH` sets the percentiles by hand for either model.
 
+## Results
+
+Each column is a 360 px crop of a test image, with the output of `segment.py`. The two wide-field crops show the tubule model. The SIM crop shows the sheet and tubule model, where only the tubules go into the graph.
+
+<p align="center">
+  <img src="fig/results.png" alt="Input, segmentation and skeleton graph for two crops of a wide-field image and one crop of a SIM image" width="900">
+</p>
+
+### One cell, 250 seconds apart
+
+The file names of the two wide-field test images match the optogenetic experiment in the paper, a COS-7 cell with the ER labelled in YFP and imaged every 2 s. In that experiment blue light sends the lysosomes to the edge of the cell, and the paper reports a burst of ER tubule growth where they arrive. By their numbering the test images are frames 0 and 125 of one recording, so they show the same cell 250 s apart.
+
+<p align="center">
+  <img src="fig/remodelling.png" alt="Skeleton graph of the same cell at frame 0 and frame 125, with a table of measurements for both" width="900">
+</p>
+
+ERNet puts numbers on what happened in between. The lobe on the lower right goes from a few long loops to a dense polygonal mesh. Across the cell the ER covers 45% more area, the count of three-way junctions rises from 381 to 494, and the network closes up from 20 fragments to 6.
+
+This is one cell and two frames, measured with the code in this repository. It shows what the output is for. The paper's own analysis of the experiment covers eight cells.
+
+### Against intensity thresholds
+
+The obvious alternative is a threshold. The figure applies an Otsu threshold and a local threshold to frame 125, and runs the graph extraction of `segment.py` on each mask.
+
+<p align="center">
+  <img src="fig/threshold.png" alt="The input image and the masks from an Otsu threshold, a local threshold and ERNet, with the number of fragments in each" width="900">
+</p>
+
+The Otsu threshold finds the cell body and little else. The local threshold finds the tubules but cuts them wherever the signal dips, picks up noise in the background and draws a ring around the cell body. The setting shown is the best connected of the 32 we tried, with two smoothing widths, four window sizes and four offsets. `python fig/make_figures.py --sweep` prints all of them.
+
 ## Introduction
 
 ERNet is an artificial neural network based model for segmentation of endoplasmic reticulum microscopy images. The network architecture of choice is a deep residual network inspired by EDSR and RCAN ([Lim et al. 2017](https://arxiv.org/abs/1707.02921), [Zhang et al., 2018](https://arxiv.org/abs/1807.02758)). The modified architecture is shown in the image below with a block corresponding to EDSR.
