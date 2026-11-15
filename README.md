@@ -172,3 +172,37 @@ Both models are also on the [v1.0 release](https://github.com/charlesnchr/ERNet/
 - The saturated region around the nucleus is left unlabelled. Wide-field imaging cannot resolve the ER there.
 - The channel attention pools over the whole tile, so the result depends slightly on how a frame is tiled. For the test images, one pass and the four overlapping tiles of `evaluate.py` disagree on fewer than 0.1% of the pixels.
 - The graph comes from a 2D image. Tubules that cross at different heights appear as a junction, and the number of tips is sensitive to noise at the edge of the mask.
+
+## Citation
+
+```bibtex
+@article{lu2020lysosomes,
+  title   = {The structure and global distribution of the endoplasmic reticulum network are actively regulated by lysosomes},
+  author  = {Lu, Meng and van Tartwijk, Francesca W. and Lin, Julie Qiaojin and Nijenhuis, Wilco and Parutto, Pierre and Fantham, Marcus and Christensen, Charles N. and Avezov, Edward and Holt, Christine E. and Tunnacliffe, Alan and Holcman, David and Kapitein, Lukas and Kaminski Schierle, Gabriele S. and Kaminski, Clemens F.},
+  journal = {Science Advances},
+  volume  = {6},
+  number  = {51},
+  pages   = {eabc7209},
+  year    = {2020},
+  doi     = {10.1126/sciadv.abc7209}
+}
+```
+
+The segmentation network is described in the Methods section of the paper, under "Segmentation using deep convolutional neural networks". If you use the later transformer model, cite the [Nature Methods paper](https://doi.org/10.1038/s41592-023-01815-0) of ERnet-v2.
+
+ERNet was written by Charles N. Christensen in the [Laser Analytics Group](https://laser.ceb.cam.ac.uk/) at the University of Cambridge, for a study led by Meng Lu and Clemens F. Kaminski. Questions about the code go to Charles, through the [issue tracker](https://github.com/charlesnchr/ERNet/issues) or at `charles.n.chr@gmail.com`.
+
+## Related work
+
+- [ERnet-v2](https://github.com/charlesnchr/ERnet-v2) is the successor, a vision transformer that labels tubules, sheets and sheet-based tubules and analyses the topology of the network.
+- [ML-SIM](https://github.com/charlesnchr/ML-SIM) reconstructs the super-resolution SIM images that the sheet model works on, and its desktop app includes that model as a plugin.
+- [VSR-SIM](https://github.com/charlesnchr/VSR-SIM) reconstructs SIM videos of moving samples with a transformer.
+
+## License
+
+The code and the pre-trained weights are released under the [GNU General Public License v3.0](LICENSE). You can use, modify and redistribute them, and derived work that you distribute has to stay under the same license. [`THIRD_PARTY_NOTICES`](THIRD_PARTY_NOTICES) lists the code that comes from other projects.
+
+## Credits
+
+- [EDSR-PyTorch](https://github.com/sanghyun-son/EDSR-PyTorch) and [RCAN](https://github.com/yulunzhang/RCAN) for the network architectures.
+- [Pytorch-UNet](https://github.com/milesial/Pytorch-UNet) for the U-Net in `models.py`.
