@@ -58,7 +58,7 @@ def EvaluateModel(opt):
     
     net = GetModel(opt)
 
-    checkpoint = torch.load(opt.weights)
+    checkpoint = torch.load(opt.weights, map_location='cpu')
     if opt.cpu:
         net.cpu()
     
