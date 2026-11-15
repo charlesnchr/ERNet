@@ -148,3 +148,27 @@ python segment.py --weights trained_models/ERNet_rcan-rg5/final.pth your_image.p
 ```
 
 Add `--cpu` to try the training without a GPU. It runs, but at about 5 s per crop on four cores a full run needs a GPU. `python run.py -h` lists every option, including `--model edsr` and `--model unet` for the other architectures in `models.py`. `evaluate.py` segments images with any of them, and `run.ipynb` walks through the training in a notebook.
+
+## What is in the repository
+
+| Path | Contents |
+| --- | --- |
+| `segment.py` | Segment images and stacks with the pre-trained models and measure the tubule graph |
+| `pretrained_model/` | The tubule model and the log of its training run |
+| `run.py`, `models.py`, `datahandler.py`, `plotting.py`, `options.py` | Training loop, network architectures, data loading, validation plots and command line options |
+| `evaluate.py` | The original evaluation script, for models with any of the architectures |
+| `buildTrainingData.py` | Cuts labelled images into augmented training crops |
+| `trainingdata/` | Five labelled images and the 500 crops made from them |
+| `testdata/` | Two wide-field test images with the masks from `evaluate.py`, and one SIM test image |
+| `fig/make_figures.py` | Regenerates the figures on this page |
+
+Both models are also on the [v1.0 release](https://github.com/charlesnchr/ERNet/releases/tag/v1.0) as direct downloads.
+
+## Limits
+
+- This is the first version. [ERnet-v2](https://github.com/charlesnchr/ERnet-v2) has a transformer model with four classes, was tested on more microscopes and cell types, and was checked against ground truth. Use it for new work unless you need a plain CNN or wide-field input like the test images.
+- The tubule model was trained on five images from one microscope. Expect to retrain it for other optics or cell types.
+- Neither model here has a published accuracy figure. The fragment counts above compare ERNet with thresholds on one frame, and they are not a benchmark against labelled ground truth.
+- The saturated region around the nucleus is left unlabelled. Wide-field imaging cannot resolve the ER there.
+- The channel attention pools over the whole tile, so the result depends slightly on how a frame is tiled. For the test images, one pass and the four overlapping tiles of `evaluate.py` disagree on fewer than 0.1% of the pixels.
+- The graph comes from a 2D image. Tubules that cross at different heights appear as a junction, and the number of tips is sensitive to noise at the edge of the mask.
