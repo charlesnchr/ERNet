@@ -106,6 +106,8 @@ def read_frames(path):
     """Yield the frames of an image file as 2D arrays in their stored bit depth."""
     with Image.open(path) as im:
         for frame in ImageSequence.Iterator(im):
+            if frame.mode == "P":  # palette image, the stored values are colour indices
+                frame = frame.convert("RGB")
             arr = np.asarray(frame)
             if arr.ndim == 3:  # colour image, keep the brightest channel
                 arr = arr[..., :3].max(axis=2)
