@@ -44,6 +44,12 @@ python segment.py testdata/input/*.png
 
 This segments the two wide-field test images with the tubule model. The weights come with the repository, which makes the clone about 130 MB. A GPU is used when one is available.
 
+On a machine without a GPU, install the CPU build of PyTorch first. It is a much smaller download than the default build.
+
+```bash
+pip install torch torchvision --index-url https://download.pytorch.org/whl/cpu
+```
+
 Everything lands in `segmented/`.
 
 | File | Contents |
