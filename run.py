@@ -7,7 +7,6 @@ import torch.nn as nn
 import torch.optim as optim
 import torchvision
 from torch.autograd import Variable
-from torch.utils.tensorboard import SummaryWriter
 
 from models import GetModel
 from datahandler import GetDataloaders
@@ -48,14 +47,13 @@ def train(dataloader, validloader, net, nepoch=10):
 
 
     if len(opt.weights) > 0: # load previous weights?
-        checkpoint = torch.load(opt.weights)
+        checkpoint = torch.load(opt.weights, map_location='cpu')
         print('loading checkpoint',opt.weights)
         if opt.undomulti:
             checkpoint['state_dict'] = remove_dataparallel_wrapper(checkpoint['state_dict'])
-        else:
-            net.load_state_dict(checkpoint['state_dict'])
-            optimizer.load_state_dict(checkpoint['optimizer'])
-            start_epoch = checkpoint['epoch']
+        net.load_state_dict(checkpoint['state_dict'])
+        optimizer.load_state_dict(checkpoint['optimizer'])
+        start_epoch = checkpoint['epoch']
 
 
     if len(opt.scheduler) > 0:
@@ -150,6 +148,7 @@ if __name__ == '__main__':
     net = GetModel(opt)
 
     if opt.log:
+        from torch.utils.tensorboard import SummaryWriter
         opt.writer = SummaryWriter(comment='_%s_%s' % (opt.out.replace('\\','/').split('/')[-1], opt.model))
         opt.train_stats = open(opt.out.replace('\\','/') + '/train_stats.csv','w')
         opt.test_stats = open(opt.out.replace('\\','/') + '/test_stats.csv','w')
@@ -162,7 +161,7 @@ if __name__ == '__main__':
         train(dataloader, validloader, net, nepoch=opt.nepoch)
     else:
         if len(opt.weights) > 0: # load previous weights?
-            checkpoint = torch.load(opt.weights)
+            checkpoint = torch.load(opt.weights, map_location='cpu')
             print('loading checkpoint',opt.weights)
             if opt.undomulti:
                 checkpoint['state_dict'] = remove_dataparallel_wrapper(checkpoint['state_dict'])

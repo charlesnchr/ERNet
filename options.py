@@ -21,7 +21,7 @@ parser.add_argument('--scheduler', type=str, default='', help='options for a sch
 parser.add_argument('--dataset', type=str, default='imagedataset', help='dataset to train')
 parser.add_argument('--imageSize', type=int, default=24, help='the low resolution image size')
 parser.add_argument('--weights', type=str, default='', help='model to retrain from')
-parser.add_argument('--root', type=str, default='/auto/homes/cnc39/phd/datasets', help='dataset to train')
+parser.add_argument('--root', type=str, default='trainingdata/partitioned_256', help='training set folder for run.py, image or folder of images for evaluate.py')
 parser.add_argument('--out', type=str, default='results', help='folder to output model training results')
 
 # computation 
@@ -45,7 +45,7 @@ parser.add_argument('--n_feats', type=int, default=64, help='number of feature m
 parser.add_argument('--ntest', type=int, default=10, help='number of images to test per epoch or test run')
 parser.add_argument('--testinterval', type=int, default=1, help='number of epochs between tests during training')
 parser.add_argument('--test', action='store_true')
-parser.add_argument('--cpu', action='store_true') # not supported for training
+parser.add_argument('--cpu', action='store_true', help='run on CPU even if a GPU is available')
 parser.add_argument('--batchSize_test', type=int, default=1, help='input batch size for test loader')
 parser.add_argument('--plotinterval', type=int, default=1, help='number of test samples between plotting')
 

@@ -1,14 +1,12 @@
 import glob
 from PIL import Image
 import random
-import parser
 import os
 import scipy.ndimage as ndimage
 
 import numpy as np
 import pickle
 
-from skimage.measure import compare_ssim
 from skimage import io
 
 
