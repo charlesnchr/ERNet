@@ -2,19 +2,24 @@
 measure the tubular network.
 
     python segment.py testdata/input/*.png
+    python segment.py --model sheets testdata/input_sim/*.png
 
 Inputs are greyscale images (PNG, JPG, TIFF) or multi-frame TIFF stacks. For
 every frame the script writes the class map, a colour overlay and the skeleton
 graph of the tubules drawn over the input. One row per frame goes to
 metrics.csv in the output folder.
 
-The model is the one in pretrained_model/, which separates tubules from
-background in wide-field images.
+Two models are available. "tubules" is the model in pretrained_model/, which
+separates tubules from background in wide-field images. "sheets" is a later
+model of the same architecture that separates sheets from tubules in
+super-resolution (SIM) images. It is downloaded on first use.
 """
 
 import argparse
 import csv
+import hashlib
 import os
+import urllib.request
 
 import networkx as nx
 import numpy as np
@@ -26,6 +31,7 @@ from skimage.morphology import skeletonize
 from models import RCAN
 
 HERE = os.path.dirname(os.path.abspath(__file__))
+RELEASE = "https://github.com/charlesnchr/ERNet/releases/download/v1.0/"
 
 # grey values of the class maps, the same as evaluate.py writes
 BACKGROUND, SHEET, TUBULE = 0, 127, 255
@@ -33,8 +39,17 @@ BACKGROUND, SHEET, TUBULE = 0, 127, 255
 MODELS = {
     "tubules": dict(
         path=os.path.join(HERE, "pretrained_model", "final.pth"),
+        url=RELEASE + "ERNet_tubules_rcan_5x10.pth",
+        sha256="fe8bf276e8cd65be86a56307335798275e6a40b1f7a9e6d430734c91c080d43b",
         n_resgroups=5, grey=(BACKGROUND, TUBULE),
         stretch=None,  # trained on 8-bit images as they are stored
+    ),
+    "sheets": dict(
+        path=os.path.join(HERE, "weights", "ERNet_sheets_tubules_rcan_2x10.pth"),
+        url=RELEASE + "ERNet_sheets_tubules_rcan_2x10.pth",
+        sha256="5b229eb9775654affa86e6c8b959afeb5d3ca0c76e4c8b6a8096c738e2456620",
+        n_resgroups=2, grey=(BACKGROUND, SHEET, TUBULE),
+        stretch=(1, 99),  # each frame is stretched between these percentiles
     ),
 }
 
@@ -48,12 +63,36 @@ COLUMNS = ["file", "frame", "model", "er_fraction", "tubule_fraction", "sheet_fr
            "assortativity", "clustering"]
 
 
+def sha256(path):
+    h = hashlib.sha256()
+    with open(path, "rb") as f:
+        for block in iter(lambda: f.read(1 << 20), b""):
+            h.update(block)
+    return h.hexdigest()
+
+
+def download(url, dest, digest):
+    """Fetch a file from the release and check its hash."""
+    os.makedirs(os.path.dirname(dest), exist_ok=True)
+    print("Downloading", url)
+    try:
+        urllib.request.urlretrieve(url, dest + ".part")
+    except OSError as err:
+        raise SystemExit("Download failed (%s). Fetch %s by hand and save it as %s." % (err, url, dest))
+    if sha256(dest + ".part") != digest:
+        os.remove(dest + ".part")
+        raise SystemExit("Checksum mismatch for %s, the download was discarded." % url)
+    os.replace(dest + ".part", dest)
+
+
 def load_model(name, device, weights=None):
     """Build the RCAN of the chosen model and load its weights."""
     spec = MODELS[name]
     path = weights or spec["path"]
     if not os.path.isfile(path):
-        raise SystemExit("No such file: %s" % path)
+        if weights:
+            raise SystemExit("No such file: %s" % weights)
+        download(spec["url"], path, spec["sha256"])
     opt = argparse.Namespace(nch_in=1, nch_out=len(spec["grey"]), n_resgroups=spec["n_resgroups"],
                              n_resblocks=10, n_feats=64, reduction=16, narch=0)
     net = RCAN(opt)
@@ -266,7 +305,9 @@ def analyse(net, model, arr, device, tile=1536, stretch=None):
 def main():
     p = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     p.add_argument("images", nargs="+", help="greyscale images or TIFF stacks")
-    p.add_argument("--model", choices=sorted(MODELS), default="tubules", help="which pre-trained model to use")
+    p.add_argument("--model", choices=sorted(MODELS), default="tubules",
+                   help="tubules: tubules against background, for wide-field images. "
+                        "sheets: sheets and tubules, for SIM images")
     p.add_argument("--weights", help="use this checkpoint instead of the released one")
     p.add_argument("--out", default="segmented", help="output folder")
     p.add_argument("--stretch", type=float, nargs=2, metavar=("LOW", "HIGH"),
