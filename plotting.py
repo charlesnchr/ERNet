@@ -2,7 +2,7 @@ import torch
 import matplotlib.pyplot as plt
 import torchvision
 import skimage
-from skimage.measure import compare_ssim
+from skimage.metrics import structural_similarity
 import torchvision.transforms as transforms
 import numpy as np
 import time
@@ -26,8 +26,7 @@ def testAndMakeCombinedPlots(net,loader,opt,idx=None):
 
     def SSIM_numpy(p0,p1):
         I0,I1 = np.array(p0)/255.0, np.array(p1)/255.0
-        # return structural_similarity(I0, I1, multichannel=True)
-        return compare_ssim(I0, I1, multichannel=True)
+        return structural_similarity(I0, I1, data_range=1.0)
 
     def makesubplot(idx, img, hr=None, title=''):
         plt.subplot(1,3,idx)
