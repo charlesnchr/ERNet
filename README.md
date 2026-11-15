@@ -93,15 +93,34 @@ The obvious alternative is a threshold. The figure applies an Otsu threshold and
 
 The Otsu threshold finds the cell body and little else. The local threshold finds the tubules but cuts them wherever the signal dips, picks up noise in the background and draws a ring around the cell body. The setting shown is the best connected of the 32 we tried, with two smoothing widths, four window sizes and four offsets. `python fig/make_figures.py --sweep` prints all of them.
 
-## Introduction
+## How it works
 
-ERNet is an artificial neural network based model for segmentation of endoplasmic reticulum microscopy images. The network architecture of choice is a deep residual network inspired by EDSR and RCAN ([Lim et al. 2017](https://arxiv.org/abs/1707.02921), [Zhang et al., 2018](https://arxiv.org/abs/1807.02758)). The modified architecture is shown in the image below with a block corresponding to EDSR.
+<p align="center">
+  <img src="fig/architecture.png" alt="Network architecture: a convolution, a chain of residual blocks, a convolution with a long skip connection, and a decoding layer in place of the upsampling block" width="820">
+</p>
 
-<img src="fig/architecture.png">
+**1. A restoration network without the upsampling.** A first convolution lifts the greyscale input to 64 feature channels. Residual groups follow. Each group is a stack of 10 blocks, and each block is two 3x3 convolutions and a channel attention gate. Skip connections run around every block, every group and the whole body, so the low-frequency content of the image passes straight through and the layers can spend their capacity on fine detail. The tubule model has five groups and 3.9 million parameters. The sheet model has two groups and 1.6 million.
 
-The architectures of these models are among several residual learning networks (cite ResNet, SRGan, EDSR) designed for image restoration, specifically single image super-resolution (SR), i.e. image upsampling. The state-of-the-art SR architectures generally do not use downsampling between layers, but instead make training of deep networks feasible by following the structure of residual networks as first introduced with ResNets intended for image classification. The design idea of residual networks was taken one step further in EDSR with the proposal of a modified residual building block called ResBlock, which was found to be superior to the previously proposed and more directly adapted ResNet model called SRResNet
+**2. A classifier in place of the super-resolution block.** [EDSR](https://arxiv.org/abs/1707.02921) and [RCAN](https://arxiv.org/abs/1807.02758) end in a block that upsamples the feature maps. ERNet ends in a 1x1 convolution that reduces the 64 channels to one score per class. Training minimises the cross-entropy between those scores and the label map, and at inference every pixel gets the class with the highest score. The network could have been trained to restore the image, with a threshold applied to its output afterwards. The paper prefers direct classification, because a squared error loss saturates and learns slowly on outputs of this kind.
 
-Choosing the first part of our segmentation model to have an architecture built for restoration ensures that it is capable of handling low signal-to-noise ratio as it can learn to perform denoising in these early layers of its network. A neural network model intended for image restoration will by default perform regression in order to output pixel value predictions in the same colour space as the input image. This is achieved during model training by minimising an appropriate loss function, typically the mean squared error.
+**3. Labels from a handful of images.** The label maps for the tubule model started as a rough threshold of a frame denoised with ND-SAFIR, and were then cleaned up by hand in an image editor. Five of them are in `trainingdata/labelled_data`. `buildTrainingData.py` cuts 100 random 256 px crops from each, changes their brightness and adds either noise or blur. The data loader flips and transposes them at random during training.
+
+**4. Skeleton and graph.** `segment.py` takes the tubule pixels, drops specks smaller than 50 px and thins the rest to lines one pixel wide. Branches shorter than 6 px that end in a tip are pruned, because thinning leaves such spurs on thick structures. Skeleton pixels with one neighbour become tips, pixels with more than two become junctions, and the lines between them become the edges of a [NetworkX](https://networkx.org/) graph.
+
+`metrics.csv` has these columns.
+
+| Column | Meaning |
+| --- | --- |
+| `er_fraction` | Share of the frame covered by ER |
+| `tubule_fraction`, `sheet_fraction` | Share of each class in the ER area |
+| `skeleton_length_px` | Total length of the tubule skeleton in pixels |
+| `nodes`, `edges` | Size of the tubule graph |
+| `tips` | Nodes with one tubule attached, the free ends |
+| `three_way_junctions`, `multiway_junctions` | Nodes where three tubules meet, and nodes where more than three meet |
+| `fragments` | Number of disconnected pieces of the graph |
+| `largest_fragment_share` | Share of the nodes that belong to the largest fragment. 1 is a fully connected network |
+| `assortativity` | Whether nodes connect to nodes of similar degree, from -1 to 1 |
+| `clustering` | Average clustering coefficient of the graph |
 
 ## Training data :bar_chart:
 A simple training data set is provided in `./trainingdata/partitioned_256`. This dataset is preprocessed based on the labelled datafiles in `./trainingdata/labelled_data` using the command:
