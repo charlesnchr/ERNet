@@ -7,7 +7,6 @@ import torch.nn as nn
 import torch.optim as optim
 import torchvision
 from torch.autograd import Variable
-from torch.utils.tensorboard import SummaryWriter
 
 from models import GetModel
 from datahandler import GetDataloaders
@@ -150,6 +149,7 @@ if __name__ == '__main__':
     net = GetModel(opt)
 
     if opt.log:
+        from torch.utils.tensorboard import SummaryWriter
         opt.writer = SummaryWriter(comment='_%s_%s' % (opt.out.replace('\\','/').split('/')[-1], opt.model))
         opt.train_stats = open(opt.out.replace('\\','/') + '/train_stats.csv','w')
         opt.test_stats = open(opt.out.replace('\\','/') + '/test_stats.csv','w')
