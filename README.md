@@ -154,7 +154,7 @@ Add `--cpu` to try the training without a GPU. It runs, but at about 5 s per cro
 | Path | Contents |
 | --- | --- |
 | `segment.py` | Segment images and stacks with the pre-trained models and measure the tubule graph |
-| `pretrained_model/` | The tubule model and the log of its training run |
+| `pretrained_model/` | The tubule model and a training log with its options |
 | `run.py`, `models.py`, `datahandler.py`, `plotting.py`, `options.py` | Training loop, network architectures, data loading, validation plots and command line options |
 | `evaluate.py` | The original evaluation script, for models with any of the architectures |
 | `buildTrainingData.py` | Cuts labelled images into augmented training crops |
