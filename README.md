@@ -122,36 +122,29 @@ The Otsu threshold finds the cell body and little else. The local threshold find
 | `assortativity` | Whether nodes connect to nodes of similar degree, from -1 to 1 |
 | `clustering` | Average clustering coefficient of the graph |
 
-## Training data :bar_chart:
-A simple training data set is provided in `./trainingdata/partitioned_256`. This dataset is preprocessed based on the labelled datafiles in `./trainingdata/labelled_data` using the command:
-```powershell
+## Train a model on your own images
+
+The tubule model has seen one microscope and one cell line. For data that looks different, label a few images and train your own. Five label maps were enough for the released model.
+
+The image is a greyscale file. Its label is an RGBA PNG of the same size, opaque where there is ER and transparent elsewhere. List your image and label pairs in `allimgs` at the bottom of `buildTrainingData.py`, then cut them into crops.
+
+```bash
 python buildTrainingData.py
 ```
 
-## Model training :watch:
+This writes 100 crops per image to `trainingdata/testpartitioned_256`. The copy in `trainingdata/partitioned_256` is the set the released model was trained on. Train on either folder with `run.py`.
 
+```bash
+python run.py --root trainingdata/partitioned_256 --out trained_models/ERNet_rcan-rg5 \
+    --dataset pickledataset --imageSize 256 --ntrain 480 --ntest 20 --batchSize 2 \
+    --model rcan --nch_in 1 --nch_out 2 --n_resgroups 5 --n_resblocks 10 \
+    --lr 0.0001 --scheduler 20,0.5 --nepoch 100
+```
 
-* Start in the root folder: ```./```
-* See available command line options with `python run.py -h`
-* An example of options for training with RCAN could be:
-  ```powershell
-  --root trainingdata/partitioned_256
-  --out trained_models/ERNet_rcan-rg5
-  --imageSize 256
-  --model rcan
-  --nch_in 1
-  --nch_out 2
-  --ntrain 480
-  --ntest 20
-  --batchSize 2
-  --n_resgroups 5
-  --n_resblocks 10
-  --lr 0.0001
-  --scheduler 20,0.5
-  --nepoch 100
-  --dataset pickledataset
-  ```
-* Run the `run.py` script with Python, e.g.:
-  ```powershell
-  python run.py --root trainingdata/partitioned_256 --out trained_models/ERNet_rcan-rg5 --imageSize 256 --model rcan --nch_in 1 --nch_out 2 --ntrain 480 --ntest 20 --batchSize 2 --n_resgroups 5 --n_resblocks 10 --lr 0.0001 --scheduler 20,0.5 --nepoch 100 --dataset pickledataset
-  ```
+After every epoch the script writes validation images to the output folder, with the input, the prediction and the label side by side. The finished model works with `segment.py`.
+
+```bash
+python segment.py --weights trained_models/ERNet_rcan-rg5/final.pth your_image.png
+```
+
+Add `--cpu` to try the training without a GPU. It runs, but at about 5 s per crop on four cores a full run needs a GPU. `python run.py -h` lists every option, including `--model edsr` and `--model unet` for the other architectures in `models.py`. `evaluate.py` segments images with any of them, and `run.ipynb` walks through the training in a notebook.
